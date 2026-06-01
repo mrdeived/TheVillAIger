@@ -1,6 +1,8 @@
 [gd_scene format=4 uid="uid://b7ml4vr2pkhkn"]
 
+[ext_resource type="Script" uid="uid://0aur6v2knrpf" path="res://episode_1.gd" id="1_8yvsd"]
 [ext_resource type="Texture2D" uid="uid://bw7xjkwdqus8m" path="res://assets/enviroment/free.png" id="1_afpfj"]
+[ext_resource type="Script" uid="uid://dcjmaswslhyo6" path="res://potato.gd" id="2_7jq4n"]
 [ext_resource type="Script" uid="uid://cjn0k6qv7gbf4" path="res://villaiger.gd" id="2_evquc"]
 [ext_resource type="Texture2D" uid="uid://b3n1ddjspfi28" path="res://assets/characters/MiniVillagerMan.png" id="3_ymhj4"]
 [ext_resource type="Script" uid="uid://c1iji4meqq2q3" path="res://camera_2d.gd" id="4_cwfhm"]
@@ -8,6 +10,8 @@
 [ext_resource type="Texture2D" uid="uid://c1kst3na6jtun" path="res://assets/enviroment/labitems.png" id="6_5hjvu"]
 [ext_resource type="Texture2D" uid="uid://lkpctxgecsfq" path="res://assets/enviroment/labwalls.png" id="6_cwfhm"]
 [ext_resource type="Texture2D" uid="uid://bmcy70sq3iqci" path="res://assets/enviroment/board.png" id="7_8yvsd"]
+
+[sub_resource type="PackedScene" id="PackedScene_7jq4n"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_afpfj"]
 size = Vector2(15, 12)
@@ -1145,19 +1149,22 @@ texture = ExtResource("6_cwfhm")
 sources/0 = SubResource("TileSetAtlasSource_ymhj4")
 sources/1 = SubResource("TileSetAtlasSource_ix41w")
 
-[node name="Node2D" type="Node2D" unique_id=1895759543]
+[node name="Episode1" type="Node2D" unique_id=1895759543]
+script = ExtResource("1_8yvsd")
+potato_scene = SubResource("PackedScene_7jq4n")
 
-[node name="potato" type="Area2D" parent="." unique_id=281712170]
+[node name="Potato" type="Area2D" parent="." unique_id=281712170]
 z_index = 1
-position = Vector2(960, 540)
+position = Vector2(606, 467)
+script = ExtResource("2_7jq4n")
 
-[node name="Sprite2D" type="Sprite2D" parent="potato" unique_id=2014628786]
+[node name="Sprite2D" type="Sprite2D" parent="Potato" unique_id=2014628786]
 texture_filter = 1
 texture = ExtResource("1_afpfj")
 region_enabled = true
 region_rect = Rect2(176, 128, 16, 16)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="potato" unique_id=1679474524]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Potato" unique_id=1679474524]
 position = Vector2(0.5, 1)
 shape = SubResource("RectangleShape2D_afpfj")
 
