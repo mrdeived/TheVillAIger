@@ -1,6 +1,6 @@
 extends CharacterBody2D
 
-@export var speed: float = 180.0
+@export var speed: float = 45.0
 @export var server_url: String = "ws://127.0.0.1:8765"
 @export var command_timeout: float = 0.5
 
