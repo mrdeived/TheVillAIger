@@ -2,13 +2,18 @@ extends CharacterBody2D
 
 @export var speed: float = 45.0
 @export var server_url: String = "ws://127.0.0.1:8765"
-@export var command_timeout: float = 0.5
+@export var action_interval: float = 0.25
+@export var command_timeout: float = 1.0
 
 @onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
 
 var websocket := WebSocketPeer.new()
+
 var current_action: String = "idle"
 var time_since_last_command: float = 0.0
+
+var action_timer: float = 0.0
+var waiting_for_action: bool = false
 
 var action_vectors := {
 	"idle": Vector2.ZERO,
@@ -42,6 +47,13 @@ func _process(delta: float) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if websocket.get_ready_state() == WebSocketPeer.STATE_OPEN:
+		action_timer += delta
+
+		if action_timer >= action_interval and not waiting_for_action:
+			action_timer = 0.0
+			send_state_to_python()
+
 	time_since_last_command += delta
 
 	if time_since_last_command > command_timeout:
@@ -66,6 +78,20 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 
+func send_state_to_python() -> void:
+	var state_data := {
+		"type": "state",
+		"villager_x": global_position.x,
+		"villager_y": global_position.y,
+		"current_action": current_action
+	}
+
+	var message := JSON.stringify(state_data)
+	websocket.send_text(message)
+
+	waiting_for_action = true
+
+
 func read_websocket_messages() -> void:
 	while websocket.get_available_packet_count() > 0:
 		var packet := websocket.get_packet()
@@ -76,16 +102,19 @@ func read_websocket_messages() -> void:
 
 		if result != OK:
 			print("Invalid JSON received: ", message)
+			waiting_for_action = false
 			return
 
 		var data = json.data
 
-		if data.has("action"):
+		if data.has("type") and data["type"] == "action":
 			var received_action: String = str(data["action"]).to_lower()
 
 			if action_vectors.has(received_action):
 				current_action = received_action
 				time_since_last_command = 0.0
+				waiting_for_action = false
 				print("Received action: ", current_action)
 			else:
 				print("Unknown action: ", received_action)
+				waiting_for_action = false

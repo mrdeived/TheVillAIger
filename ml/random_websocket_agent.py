@@ -13,17 +13,19 @@ async def handle_client(websocket):
     print("Godot connected.")
 
     try:
-        while True:
-            action = random.choice(ACTIONS)
+        async for message in websocket:
+            data = json.loads(message)
 
-            message = {
-                "action": action
-            }
+            if data.get("type") == "state":
+                action = random.choice(ACTIONS)
 
-            await websocket.send(json.dumps(message))
-            print(f"Sent action: {action}")
+                response = {
+                    "type": "action",
+                    "action": action
+                }
 
-            await asyncio.sleep(0.4)
+                await websocket.send(json.dumps(response))
+                print(f"State received. Sent action: {action}")
 
     except websockets.exceptions.ConnectionClosed:
         print("Godot disconnected.")
