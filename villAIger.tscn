@@ -371,13 +371,13 @@ texture_filter = 1
 position = Vector2(931, 537)
 sprite_frames = SubResource("SpriteFrames_v4vh4")
 animation = &"idle"
-frame_progress = 0.10936344
+frame_progress = 0.28524226
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="villaiger" unique_id=770701571]
 shape = SubResource("CapsuleShape2D_tct2b")
 
 [node name="Camera2D" type="Camera2D" parent="villaiger" unique_id=356964734]
-position = Vector2(960, 541)
+position = Vector2(960, 540)
 zoom = Vector2(3, 3)
 script = ExtResource("4_6xs6f")
 
