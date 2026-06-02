@@ -8,10 +8,15 @@ extends Node2D
 @onready var floor_tilemap: TileMapLayer = $floor
 @onready var potatoes_container: Node2D = $Potatoes
 
-@onready var episode_label: Label = $WorldLabels/EpisodeLabel
 @onready var potatoes_label: Label = $WorldLabels/PotatoesLabel
 @onready var timer_label: Label = $WorldLabels/TimerLabel
 @onready var score_label: Label = $WorldLabels/ScoreLabel
+
+@onready var villaiger: CharacterBody2D = $villaiger
+@onready var villaiger_cam: Camera2D = $villaiger/villaigercam
+@onready var lab_cam: Camera2D = $labcam
+
+var using_villaiger_cam: bool = true
 
 var time_left: float
 var inventory_count: int = 0
@@ -24,12 +29,31 @@ func _ready() -> void:
 	inventory_count = 0
 	score = 0
 	episode_finished = false
+	
+	villaiger_cam.make_current()
+	using_villaiger_cam = true
 
 	print("Episode 1 started.")
 	print("Goal: collect ", goal_potatoes, " potatoes in ", time_limit, " seconds.")
 
 	spawn_potatoes()
 	update_labels()
+
+
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("switch_camera"):
+		switch_camera()
+
+
+func switch_camera() -> void:
+	if using_villaiger_cam:
+		lab_cam.make_current()
+		using_villaiger_cam = false
+		print("Switched to labcam")
+	else:
+		villaiger_cam.make_current()
+		using_villaiger_cam = true
+		print("Switched to villaigercam")
 
 
 func _process(delta: float) -> void:
@@ -108,9 +132,9 @@ func collect_potato() -> void:
 	inventory_count += 1
 	score += 10
 
-	print("Potato collected: \n", inventory_count, "/", goal_potatoes)
-	print("Score: \n", score)
-	print("Time left: \n", snapped(time_left, 0.01))
+	print("Potato collected: ", inventory_count, "/", goal_potatoes)
+	print("Score: ", score)
+	print("Time left: ", snapped(time_left, 0.01))
 
 	update_labels()
 
@@ -137,7 +161,28 @@ func lose_episode() -> void:
 
 
 func update_labels() -> void:
-	episode_label.text = "Episode 1"
-	potatoes_label.text = "Potatoes: \n" + str(inventory_count) + "/" + str(goal_potatoes)
-	timer_label.text = "Time: \n" + str(snapped(time_left, 0.1))
-	score_label.text = "Score: \n" + str(score)
+	potatoes_label.text = "Potatoes:\n" + str(inventory_count) + "/" + str(goal_potatoes)
+	timer_label.text = "Time:\n" + str(snapped(time_left, 0.1))
+	score_label.text = "Score:\n" + str(score)
+
+
+func get_environment_state() -> Dictionary:
+	var potato_positions := []
+
+	for potato in potatoes_container.get_children():
+		potato_positions.append({
+			"x": potato.global_position.x,
+			"y": potato.global_position.y
+		})
+
+	return {
+		"type": "state",
+		"villaiger_x": villaiger.global_position.x,
+		"villaiger_y": villaiger.global_position.y,
+		"potatoes": potato_positions,
+		"inventory_count": inventory_count,
+		"goal_potatoes": goal_potatoes,
+		"time_left": time_left,
+		"score": score,
+		"episode_finished": episode_finished
+	}

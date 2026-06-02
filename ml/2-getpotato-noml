@@ -1,0 +1,83 @@
+import asyncio
+import json
+import websockets
+
+HOST = "127.0.0.1"
+PORT = 8765
+
+
+def choose_action(data):
+    villaiger_x = data.get("villaiger_x")
+    villaiger_y = data.get("villaiger_y")
+    potatoes = data.get("potatoes", [])
+
+    if villaiger_x is None or villaiger_y is None:
+        return "idle"
+
+    if len(potatoes) == 0:
+        return "idle"
+
+    closest_potato = min(
+        potatoes,
+        key=lambda potato: (
+            (potato["x"] - villaiger_x) ** 2 +
+            (potato["y"] - villaiger_y) ** 2
+        )
+    )
+
+    dx = closest_potato["x"] - villaiger_x
+    dy = closest_potato["y"] - villaiger_y
+
+    if abs(dx) > abs(dy):
+        if dx > 0:
+            return "right"
+        else:
+            return "left"
+    else:
+        if dy > 0:
+            return "down"
+        else:
+            return "up"
+
+
+async def handle_client(websocket):
+    print("Godot connected.")
+
+    try:
+        async for message in websocket:
+            data = json.loads(message)
+
+            if data.get("type") == "state":
+                action = choose_action(data)
+
+                response = {
+                    "type": "action",
+                    "action": action
+                }
+
+                await websocket.send(json.dumps(response))
+
+                print(
+                    "Action:",
+                    action,
+                    "| Potatoes:",
+                    data.get("inventory_count"),
+                    "/",
+                    data.get("goal_potatoes"),
+                    "| Score:",
+                    data.get("score")
+                )
+
+    except websockets.exceptions.ConnectionClosed:
+        print("Godot disconnected.")
+
+
+async def main():
+    print(f"WebSocket server running on ws://{HOST}:{PORT}")
+
+    async with websockets.serve(handle_client, HOST, PORT):
+        await asyncio.Future()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

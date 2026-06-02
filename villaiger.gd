@@ -79,12 +79,20 @@ func _physics_process(delta: float) -> void:
 
 
 func send_state_to_python() -> void:
-	var state_data := {
-		"type": "state",
-		"villager_x": global_position.x,
-		"villager_y": global_position.y,
-		"current_action": current_action
-	}
+	var episode = get_tree().current_scene
+
+	var state_data := {}
+
+	if episode.has_method("get_environment_state"):
+		state_data = episode.get_environment_state()
+	else:
+		state_data = {
+			"type": "state",
+			"villaiger_x": global_position.x,
+			"villaiger_y": global_position.y
+		}
+
+	state_data["current_action"] = current_action
 
 	var message := JSON.stringify(state_data)
 	websocket.send_text(message)
